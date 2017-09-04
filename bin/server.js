@@ -1,5 +1,5 @@
 #!/usr/bin/env babel-node
-import server from '../server';
+import server from '../index';
 
 const port = 8080;
 
