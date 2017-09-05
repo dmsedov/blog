@@ -1,0 +1,15 @@
+extends ../layouts/app.pug
+
+block content
+  div
+    a(href='/') Main page
+  if posts.length > 0
+    table.table
+      tr
+        th Title
+      for post in posts
+        tr
+          td
+            a(href=`${url}/${post.id}`)= post.title
+  else
+    p Some content
