@@ -13,13 +13,15 @@ export default () => {
   const listOfPosts = [new Post('first title', 'content1'),
     new Post('second title', 'content2')];
   app.get('/', 'root', (req, res) => {
-    // app.namedRoutes.build('root');
     res.render('index');
   });
 
   app.get('/posts', 'posts', (req, res) => {
-    // app.namedRoutes.build('Posts list');
     res.render('Posts/listOfPosts', { posts: listOfPosts });
+  });
+
+  app.get('/posts/new', 'new', (req, res) => {
+    res.render('Posts/new');
   });
   //
   // app.get('/posts/:id', (req, res) => {
