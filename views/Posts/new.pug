@@ -1,0 +1,11 @@
+block content
+  .content
+    a(href=`${url('root')}`)
+    .container
+      h3 New blog post
+      form.form(method='post', action=`${url('posts')}`)
+        label(for='title') Title
+        input#title(type='text', name='title', placeholder='enter title')
+        label(for='message') Message
+        textarea#message(type='submit' value='Create' placeholder='enter message'
+         rows=20)
