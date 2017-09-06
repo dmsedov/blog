@@ -36,20 +36,21 @@ export default () => {
   });
 
   app.post('/posts', (req, res) => {
-    const { title, message } = req.body;
+    const { title, body } = req.body;
     const error = {};
     if (!title) {
       error.title = 'it must be filled';
     }
-    if (!message) {
+    if (!body) {
       error.body = 'it must be filled';
-    } else {
-      const newPost = new Post(title, message);
+    }
+    if (Object.keys(error).length === 0) {
+      const newPost = new Post(title, body);
       listOfPosts.push(newPost);
       res.redirect(`/posts/${newPost.id}`);
       return;
     }
-    res.status = 422;
+    res.sendStatus(422);
     res.render('Posts/new', { error });
   });
 
