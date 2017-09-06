@@ -1,0 +1,7 @@
+extends ../layouts/app.pug
+
+block content
+  .post
+    a(href=`${url('root')}`)
+    h3=reqPost.title
+    p=reqPost.body
