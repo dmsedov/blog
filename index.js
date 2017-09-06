@@ -23,9 +23,16 @@ export default () => {
   app.get('/posts/new', 'new', (req, res) => {
     res.render('Posts/new');
   });
-  //
-  // app.get('/posts/:id', (req, res) => {
-  //   res.render('Posts/')
-  // });
+
+  app.get('/posts/:id', (req, res) => {
+    const { id } = req.params;
+    const reqPost = listOfPosts.find((post) => {
+      if (post.id.toString() === id) {
+        return true;
+      }
+      return false;
+    });
+    res.render('Posts/show', { reqPost });
+  });
   return app;
 };
