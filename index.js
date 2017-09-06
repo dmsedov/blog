@@ -21,7 +21,7 @@ export default () => {
   });
 
   app.get('/posts/new', 'new', (req, res) => {
-    res.render('Posts/new');
+    res.render('Posts/new', { form: {} });
   });
 
   app.get('/posts/:id', (req, res) => {
@@ -34,5 +34,24 @@ export default () => {
     });
     res.render('Posts/show', { reqPost });
   });
+
+  app.post('/posts', (req, res) => {
+    const { title, message } = req.body;
+    const error = {};
+    if (!title) {
+      error.title = 'it must be filled';
+    }
+    if (!message) {
+      error.body = 'it must be filled';
+    } else {
+      const newPost = new Post(title, message);
+      listOfPosts.push(newPost);
+      res.redirect(`/posts/${newPost.id}`);
+      return;
+    }
+    res.status = 422;
+    res.render('Posts/new', { error });
+  });
+
   return app;
 };
