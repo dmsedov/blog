@@ -13,7 +13,7 @@ describe('request', () => {
   });
 
   it('GET /posts/new', async () => {
-    const res = await request(server()).get('/posts/newPost');
+    const res = await request(server()).get('/posts/new');
     expect(res.status).toBe(200);
   });
 
