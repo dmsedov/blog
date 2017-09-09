@@ -36,4 +36,23 @@ describe('request', () => {
     const res2 = await query.get(res1.headers.location);
     expect(res2.status).toBe(200);
   });
+
+  it('GET /posts/:id/edit', async () => {
+    const query = request(server());
+    const res1 = await query.post('/posts')
+    .type('form').send({ title: 'title', body: 'body' });
+    expect(res1.status).toBe(302);
+    const res2 = await query.get(res1.headers.location);
+    expect(res2.status).toBe(200);
+  });
+
+  it ('PATCH /posts/:id', async () => {
+    const app = server();
+    const res1 = await request(app).post('/posts')
+    .type('form').send({ title: 'title', body: 'body' });
+    const url = res1.headers.location.split('/').slice(0, -1).join('/');
+    const res2 = await query.patch(`${url}`).type('form')
+    .send({ title: 'newTitle', body: 'newBody' });
+    expect(res2.status).toBe(302);
+  });
 });
