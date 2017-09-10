@@ -1,6 +1,7 @@
 import Express from 'express';
 import bodyParser from 'body-parser';
 import Router from 'named-routes';
+import methodOverride from 'method-override';
 import Post from './src/Post';
 
 export default () => {
@@ -10,6 +11,7 @@ export default () => {
   router.registerAppHelpers(app);
   app.set('view engine', 'pug');
   app.use(bodyParser.urlencoded({ extended: false }));
+  app.use(methodOverride('_method'));
   const listOfPosts = [new Post('first title', 'content1'),
     new Post('second title', 'content2')];
   app.get('/', 'root', (req, res) => {
@@ -35,24 +37,24 @@ export default () => {
     res.render('Posts/show', { reqPost });
   });
 
-  app.post('/posts', (req, res) => {
+  app.post('/posts', 'posts', (req, res) => {
     const { title, body } = req.body;
     const error = {};
     if (!title) {
       error.title = 'it must be filled';
-    }
-    if (!body) {
+    } else if (!body) {
       error.body = 'it must be filled';
-    }
-    if (Object.keys(error).length === 0) {
+    } else {
       const newPost = new Post(title, body);
       listOfPosts.push(newPost);
-      res.redirect(`/posts/${newPost.id}`);
+      res.redirect(`/posts/${newPost.id}/edit`);
       return;
     }
-    res.sendStatus(422);
+    res.status(422);
     res.render('Posts/new', { error });
   });
+
+  // app.
 
   return app;
 };
