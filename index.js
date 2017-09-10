@@ -60,5 +60,24 @@ export default () => {
     res.render('Posts/edit', { form });
   });
 
+  app.patch('/posts/:id', 'posts.id', (req, res) => {
+    const { title, body } = req.body;
+    const { id } = req.params;
+    const error = {};
+    if (!title) {
+      error.title = 'it must be filled';
+    } else if (!body) {
+      error.body = 'it must be filled';
+    } else {
+      const desiredPost = listOfPosts.find(post => post.id.toString() === id);
+      desiredPost.title = title;
+      desiredPost.body = body;
+      res.redirect(`/posts/${desiredPost.id}/edit`);
+      return;
+    }
+    res.status(422);
+    res.render('Posts/new', { error });
+  });
+
   return app;
 };
