@@ -79,5 +79,12 @@ export default () => {
     res.render('Posts/new', { error });
   });
 
+  app.delete('/posts/:id', 'posts.id', (req, res) => {
+    const { id } = req.params;
+    const index = listOfPosts.findIndex(post => post.id.toString() === id);
+    listOfPosts.splice(index, 1);
+    res.redirect('/posts');
+  });
+
   return app;
 };

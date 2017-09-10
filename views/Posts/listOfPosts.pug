@@ -14,7 +14,7 @@ block content
             a(href=`${url('posts.id', { id: post.id })}`)=post.title
           td
             a(href=`${url('posts.id.edit', { id: post.id })}`)  Edit
-            form.delete-post(method='post' action=`${url('posts')}?_method=DELETE`)
-            input.button(type='submit' value='Delete')
+            form.delete-post(method='post' action=`${url('posts.id', { id: post.id })}?_method=DELETE`)
+              input.button(type='submit' value='Delete')
   else
     p Some content
