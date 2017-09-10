@@ -1,0 +1,10 @@
+extends ../layouts/app.pug
+
+block content
+  -const par = form ? form : error;
+  .content
+    a(href=`${url('root')}`)
+    .container
+      h3 Edit blog post
+      form.edition(method='post' action=`${url('posts')}?_method=PATCH`)
+        include ../includes/form
