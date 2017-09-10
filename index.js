@@ -55,7 +55,9 @@ export default () => {
   });
 
   app.get('/posts/:id/edit', 'posts.id.edit', (req, res) => {
-
+    const { id } = req.params;
+    const form = listOfPosts.find(post => post.id.toString() === id);
+    res.render('Posts/edit', { form });
   });
 
   return app;
