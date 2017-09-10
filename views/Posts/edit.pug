@@ -6,5 +6,5 @@ block content
     a(href=`${url('root')}`)
     .container
       h3 Edit blog post
-      form.edition(method='post' action=`${url('posts')}?_method=PATCH`)
+      form.edition(method='post' action=`${url('posts.id', { id: form.id })}?_method=PATCH`)
         include ../includes/form
