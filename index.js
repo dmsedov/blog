@@ -22,11 +22,11 @@ export default () => {
     res.render('Posts/listOfPosts', { posts: listOfPosts });
   });
 
-  app.get('/posts/new', 'new', (req, res) => {
+  app.get('/posts/new', 'posts.new', (req, res) => {
     res.render('Posts/new', { form: {} });
   });
 
-  app.get('/posts/:id', (req, res) => {
+  app.get('/posts/:id', 'posts.id', (req, res) => {
     const { id } = req.params;
     const reqPost = listOfPosts.find((post) => {
       if (post.id.toString() === id) {
@@ -54,7 +54,9 @@ export default () => {
     res.render('Posts/new', { error });
   });
 
-  // app.
+  app.get('/posts/:id/edit', 'posts.id.edit', (req, res) => {
+
+  });
 
   return app;
 };
