@@ -74,19 +74,19 @@ describe('request', () => {
     expect(res2.status).toBe(302);
   });
 
-  const htmlRes = '<!DOCTYPE html><html><head><title>Blog</title></head><body><h3>Page not found</h3>';
+  const htmlRes = '<!DOCTYPE html><html><head><title>Blog</title></head><body><h3>Page not found</h3></body></html>';
 
   it('GET /unexisting-route', async () => {
     const app = server();
     const res = await request(app).get('/unexisting-route');
     expect(res.status).toBe(404);
-    expect(res.body).toBe(htmlRes);
+    expect(res.text).toBe(htmlRes);
   });
 
-  it('GET /posts/:id', async () => {
+  it('GET /posts/:id with id = 5', async () => {
     const app = server();
     const res = await request(app).get('/posts/5');
     expect(res.status).toBe(404);
-    expect(res.body).toBe(htmlRes);
+    expect(res.text).toBe(htmlRes);
   });
 });
