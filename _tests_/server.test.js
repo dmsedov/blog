@@ -73,4 +73,20 @@ describe('request', () => {
     const res2 = await request(app).delete(url);
     expect(res2.status).toBe(302);
   });
+
+  const htmlRes = '<!DOCTYPE html><html><head><title>Blog</title></head><body><h3>Page not found</h3>';
+
+  it('GET /unexisting-route', async () => {
+    const app = server();
+    const res = await request(app).get('/unexisting-route');
+    expect(res.status).toBe(404);
+    expect(res.body).toBe(htmlRes);
+  });
+
+  it('GET /posts/:id', async () => {
+    const app = server();
+    const res = await request(app).get('/posts/5');
+    expect(res.status).toBe(404);
+    expect(res.body).toBe(htmlRes);
+  });
 });
