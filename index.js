@@ -3,6 +3,7 @@ import bodyParser from 'body-parser';
 import Router from 'named-routes';
 import methodOverride from 'method-override';
 import Post from './src/Post';
+import NotFoundError from './src/NotFoundError';
 
 export default () => {
   const app = Express();
@@ -26,7 +27,7 @@ export default () => {
     res.render('Posts/new', { form: {} });
   });
 
-  app.get('/posts/:id', 'posts.id', (req, res) => {
+  app.get('/posts/:id', 'posts.id', (req, res, next) => {
     const { id } = req.params;
     const reqPost = listOfPosts.find((post) => {
       if (post.id.toString() === id) {
@@ -34,7 +35,11 @@ export default () => {
       }
       return false;
     });
-    res.render('Posts/show', { reqPost });
+    if (reqPost) {
+      res.render('Posts/show', { reqPost });
+    } else {
+      next(new NotFoundError());
+    }
   });
 
   app.post('/posts', 'posts', (req, res) => {
@@ -84,6 +89,20 @@ export default () => {
     const index = listOfPosts.findIndex(post => post.id.toString() === id);
     listOfPosts.splice(index, 1);
     res.redirect('/posts');
+  });
+
+  app.use((req, res, next) => {
+    next(new NotFoundError());
+  });
+
+  app.use((err, req, res, next) => {
+    if (err.status === 404) {
+      res.status(404);
+      res.render('errorsPages/404');
+    } else {
+      res.status(500);
+      res.render('errorsPages/500');
+    }
   });
 
   return app;
