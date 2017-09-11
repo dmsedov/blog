@@ -1,6 +1,6 @@
 {
   "name": "Blog",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Blog based on express.js",
   "scripts": {
     "babel-node": "babel-node",
