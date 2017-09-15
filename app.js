@@ -158,6 +158,11 @@ export default () => {
     res.render('forms/sign-up', { error });
   });
 
+  app.delete('/session', 'session', (req, res) => {
+    req.session.destroy();
+    res.redirect('/');
+  });
+
   app.use((req, res, next) => {
     next(new NotFoundError());
   });
