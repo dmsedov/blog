@@ -118,6 +118,31 @@ export default () => {
     res.render('forms/sign-up', { form: {} });
   });
 
+  app.post('/users', 'users', (req, res) => {
+    const { nickname, password } = req.body;
+    const error = {};
+    if (!nickname) {
+      error.nickname = 'must be filled';
+    } else {
+      const sameUser = users.find(user => user.nickname === nickname);
+      if (sameUser) {
+        error.message = `User with nickname "${sameUser.nickname}" already exists`;
+      }
+    }
+    if (!password) {
+      error.password = 'must be filled';
+    }
+    if (Object.keys(error).length === 0) {
+      const newUser = new User(nickname, password);
+      users.push(newUser);
+      req.session.nickname = nickname;
+      res.redirect('/');
+      return;
+    }
+    res.status(422);
+    res.render('forms/sign-in', { error });
+  });
+
   app.use((req, res, next) => {
     next(new NotFoundError());
   });
