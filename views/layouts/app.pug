@@ -6,10 +6,10 @@ html
     ul.nav-bar
       if currentUser.isGuest()
         li
-          a.sign-up-link(href='/users/new') Sign in
+          a.sign-in-link(href=`${url('users.new')}`) Sign in
         li
-          a.sign-in-link(href='/session/new') Sign up
+          a.sign-up-link(href=`${url('session.new')}`) Sign up
       else
         form.form-sign-out(action='/session?_method=DELETE' method='post')
-          input.button(type='submit') Sign out
+          input.button(type='submit')
       block content
