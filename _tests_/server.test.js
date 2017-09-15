@@ -1,5 +1,5 @@
 import request from 'supertest';
-import server from '../index';
+import server from '../app';
 
 describe('request', () => {
   it('GET /', async () => {
@@ -88,5 +88,77 @@ describe('request', () => {
     const res = await request(app).get('/posts/5');
     expect(res.status).toBe(404);
     expect(res.text).toBe(htmlRes);
+  });
+
+  it('GET /users/new', async () => {
+    const app = server();
+    const res =  await request(app).get('/users/new');
+    expect(res.status).toBe(200);
+  });
+
+  it('POST /users with SUCCESS', async () => {
+    const app = server();
+    const res1 =  await request(app).post('/users').type('form')
+    .send({ nickname: 'User', password: 'password' });
+    expect(res1.status).toBe(302);
+    const res2 = await request(app).get(res1.headers.location);
+    expect(res2.status).toBe(200);
+  });
+
+  it('POST /users "nickname must be uniq"', async () => {
+    const app = server();
+    const res1 =  await request(app).post('/users').type('form')
+    .send({ nickname: 'User', password: 'password1' });
+    expect(res1.status).toBe(302);
+    const res2 = await request(app).post('/users').type('form')
+    .send({ nickname: 'User', password: 'password2' });
+    expect(res2.status).toBe(422);
+  });
+
+  it('POST /users "Nickame and password must be blanked"', async () => {
+    const app = server();
+    const res1 =  await request(app).post('/users').type('form')
+    .send({ nickname: 'User' });
+    expect(res2.status).toBe(422);
+  });
+
+  it('GET /session/new', async () => {
+    const app = server();
+    const res = await request(app).get('/session/new');
+    expect(res.status).toBe(200);
+  });
+
+  it('POST /session', async () => {
+    const app = server();
+    const res1 = await request(app).post('/users').type('form')
+    .send({ nickname: 'User', password: 'password' });
+    expect(res1.status).toBe(302);
+    const res2 = await request(app).post('/session').type('form')
+    .send({ nickname: 'User', password: 'password' });
+    expect(res2.status).toBe(302);
+    const res3 = await request(app).get(res2.headers.location);
+    expect(res3.status).toBe(200);
+  });
+
+  it('POST /session with Error', async () => {
+    const app = server();
+    const res1 = await request(app).post('/users').type('form')
+    .send({ nickname: 'User', password: 'password' });
+    expect(res1.status).toBe(302);
+    const res2 = await request(app).post('/session').type('form')
+    .send({ nickname: 'User' });
+    expect(res2.status).toBe(422);
+
+  it('DELETE /session', async () => {
+    const app = server();
+    const res1 = await request(app).post('/users').type('form')
+    .send({ nickname: 'User', password: 'password' });
+    expect(res1.status).toBe(302);
+
+    const res2 = await request(app).post('/session').type('form')
+    .send({ nickname: 'User', password: 'password' });
+    const cookie = res2.header['Set-Cookie'];
+    const res3 = await request(app).post('/session').set('Cookie', cookie);
+    expect(res3.status).toBe(302);
   });
 });
