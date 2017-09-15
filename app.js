@@ -7,6 +7,7 @@ import Post from './src/Post';
 import NotFoundError from './src/NotFoundError';
 import User from './src/entities/User';
 import Guest from './src/entities/Guest';
+import encrypt from './src/encrypt';
 
 export default () => {
   const app = Express();
@@ -141,6 +142,20 @@ export default () => {
     }
     res.status(422);
     res.render('forms/sign-in', { error });
+  });
+
+  app.post('/session', 'session', (req, res) => {
+    const { nickname, password } = req.body;
+    const error = {};
+    const authUser = users.find(user => user.nickname === nickname);
+    if (authUser && authUser.passwordDigest === encrypt(password)) {
+      req.session.nickname = nickname;
+      res.redirect('/');
+      return;
+    }
+    error.message = 'Invalid user nickname or password';
+    res.status(422);
+    res.render('forms/sign-up', { error });
   });
 
   app.use((req, res, next) => {
