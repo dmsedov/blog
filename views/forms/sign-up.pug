@@ -1,0 +1,8 @@
+extends ../layouts/app.pug
+
+block content
+  -const par = error ? error : form;
+  form.form-sign-up(method='post' action=`${url(session)}`)
+    input.nickname-field(type='text' name='nickname' placeholder='enter nickname' value=par.nickname)
+    input.password-field(type='text' name='password' placeholder='enter password' value=par.password)
+    button.submit(type='submit') Sign up
