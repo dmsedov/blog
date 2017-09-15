@@ -12,6 +12,6 @@ html
         li
           a.sign-up-link(href=`${url('session.new')}`) Sign up
       else
-        form.form-sign-out(action='/session?_method=DELETE' method='post')
-          input.button(type='submit')
+        form.form-sign-out(action=`${url('session')}?_method=DELETE` method='post')
+          input.button(type='submit' value='Sign out')
       block content
