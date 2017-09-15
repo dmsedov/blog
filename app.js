@@ -2,8 +2,11 @@ import Express from 'express';
 import bodyParser from 'body-parser';
 import Router from 'named-routes';
 import methodOverride from 'method-override';
+import session from 'express-session';
 import Post from './src/Post';
 import NotFoundError from './src/NotFoundError';
+import User from './src/entities/User';
+import Guest from './src/entities/Guest';
 
 export default () => {
   const app = Express();
@@ -15,6 +18,22 @@ export default () => {
   app.use(methodOverride('_method'));
   const listOfPosts = [new Post('first title', 'content1'),
     new Post('second title', 'content2')];
+  const users = [new User('admin', 'abrakadabra')];
+  app.use(session({
+    secret: 'secret key',
+    resave: false,
+    saveUninitialized: false,
+  }));
+  app.use((req, res, next) => {
+    if (req.session.nickname) {
+      app.locals.currentUser = users.find(user => user.nickname === req.session.nickname);
+      next();
+    } else {
+      app.locals.currentUser = new Guest();
+      next();
+    }
+  });
+
   app.get('/', 'root', (req, res) => {
     res.render('index');
   });
