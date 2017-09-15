@@ -110,6 +110,14 @@ export default () => {
     res.redirect('/posts');
   });
 
+  app.get('/users/new', 'users.new', (req, res) => {
+    res.render('forms/sign-in', { form: {} });
+  });
+
+  app.get('/session/new', 'session.new', (req, res) => {
+    res.render('forms/sign-up', { form: {} });
+  });
+
   app.use((req, res, next) => {
     next(new NotFoundError());
   });
