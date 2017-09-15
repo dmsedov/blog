@@ -3,6 +3,8 @@ html
   head
     title Blog
   body
+    .logo
+      a(href=`${url('root')}`) main page
     ul.nav-bar
       if currentUser.isGuest()
         li
