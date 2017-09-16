@@ -3,6 +3,8 @@ import bodyParser from 'body-parser';
 import Router from 'named-routes';
 import methodOverride from 'method-override';
 import session from 'express-session';
+import redis from 'connect-redis';
+import cookieParser from 'cookie-parser';
 import Post from './src/Post';
 import NotFoundError from './src/NotFoundError';
 import User from './src/entities/User';
@@ -20,11 +22,19 @@ export default () => {
   const listOfPosts = [new Post('first title', 'content1'),
     new Post('second title', 'content2')];
   const users = [new User('admin', 'abrakadabra')];
+  app.use(cookieParser());
+  const RedisStore = redis(session);
   app.use(session({
+    store: new RedisStore({
+      host: '127.0.0.1',
+      port: '6379',
+      prefix: 'sess',
+    }),
     secret: 'secret key',
     resave: false,
     saveUninitialized: false,
   }));
+
   app.use((req, res, next) => {
     if (req.session.nickname) {
       app.locals.currentUser = users.find(user => user.nickname === req.session.nickname);
