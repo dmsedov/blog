@@ -38,11 +38,10 @@ export default () => {
   app.use((req, res, next) => {
     if (req.session.nickname) {
       app.locals.currentUser = users.find(user => user.nickname === req.session.nickname);
-      next();
     } else {
       app.locals.currentUser = new Guest();
-      next();
     }
+    next();
   });
 
   app.get('/', 'root', (req, res) => {
@@ -77,9 +76,11 @@ export default () => {
     const error = {};
     if (!title) {
       error.title = 'it must be filled';
-    } else if (!body) {
+    }
+    if (!body) {
       error.body = 'it must be filled';
-    } else {
+    }
+    if (Object.keys(error).length === 0) {
       const newPost = new Post(title, body);
       listOfPosts.push(newPost);
       res.redirect(`/posts/${newPost.id}/edit`);
@@ -101,9 +102,11 @@ export default () => {
     const error = {};
     if (!title) {
       error.title = 'it must be filled';
-    } else if (!body) {
+    }
+    if (!body) {
       error.body = 'it must be filled';
-    } else {
+    }
+    if (Object.keys(error).length === 0) {
       const desiredPost = listOfPosts.find(post => post.id.toString() === id);
       desiredPost.title = title;
       desiredPost.body = body;
