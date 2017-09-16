@@ -74,7 +74,11 @@ describe('request', () => {
     expect(res2.status).toBe(302);
   });
 
-  const htmlRes = '<!DOCTYPE html><html><head><title>Blog</title></head><body><h3>Page not found</h3></body></html>';
+  const htmlRes = '<!DOCTYPE html><html><head><title>Blog</title></head>' +
+  '<body><div class="logo"><a href="/">main page</a></div><ul class="nav-bar">' +
+  '<li><a class="sign-in-link" href="/users/new">Sign in</a></li>' +
+  '<li><a class="sign-up-link" href="/session/new">Sign up</a></li>' +
+  '<h3>Page not found</h3></ul></body></html>';
 
   it('GET /unexisting-route', async () => {
     const app = server();
@@ -117,9 +121,9 @@ describe('request', () => {
 
   it('POST /users "Nickame and password must be blanked"', async () => {
     const app = server();
-    const res1 =  await request(app).post('/users').type('form')
+    const res =  await request(app).post('/users').type('form')
     .send({ nickname: 'User' });
-    expect(res2.status).toBe(422);
+    expect(res.status).toBe(422);
   });
 
   it('GET /session/new', async () => {
@@ -142,12 +146,10 @@ describe('request', () => {
 
   it('POST /session with Error', async () => {
     const app = server();
-    const res1 = await request(app).post('/users').type('form')
-    .send({ nickname: 'User', password: 'password' });
-    expect(res1.status).toBe(302);
-    const res2 = await request(app).post('/session').type('form')
-    .send({ nickname: 'User' });
-    expect(res2.status).toBe(422);
+    const res = await request(app).post('/session').type('form')
+    .send({ nickname: 'admin', password: 'qwerty' });
+    expect(res.status).toBe(422);
+  });
 
   it('DELETE /session', async () => {
     const app = server();
@@ -155,10 +157,8 @@ describe('request', () => {
     .send({ nickname: 'User', password: 'password' });
     expect(res1.status).toBe(302);
 
-    const res2 = await request(app).post('/session').type('form')
-    .send({ nickname: 'User', password: 'password' });
-    const cookie = res2.header['Set-Cookie'];
-    const res3 = await request(app).post('/session').set('Cookie', cookie);
-    expect(res3.status).toBe(302);
+    const cookie = res1.header['set-cookie'];
+    const res2 = await request(app).delete('/session').set('Cookie', cookie);
+    expect(res2.status).toBe(302);
   });
 });
