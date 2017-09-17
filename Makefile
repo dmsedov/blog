@@ -1,7 +1,8 @@
 install:
 		npm install
 start:
-		npm run nodemon -- --exec babel-node bin/server		
+		sudo service redis_6379 start
+		npm run nodemon -- --exec babel-node bin/server
 publish:
 		npm publish
 lint:

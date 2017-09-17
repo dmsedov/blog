@@ -28,6 +28,7 @@
     "express": "^4.15.4",
     "express-session": "^1.15.5",
     "method-override": "^2.3.9",
+    "mysql": "^2.14.1",
     "named-routes": "^2.0.6",
     "nodemon": "^1.11.0",
     "pug": "^2.0.0-rc.3"

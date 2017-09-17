@@ -5,6 +5,7 @@ import methodOverride from 'method-override';
 import session from 'express-session';
 import redis from 'connect-redis';
 import cookieParser from 'cookie-parser';
+import mysql from 'mysql';
 import Post from './src/Post';
 import NotFoundError from './src/NotFoundError';
 import User from './src/entities/User';
@@ -14,6 +15,21 @@ import encrypt from './src/encrypt';
 export default () => {
   const app = Express();
   const router = new Router();
+  const connection = mysql.createConnection({
+    host: 'localhost',
+    user: 'app',
+    port: 3306,
+    password: 'Tas2giq2',
+    database: 'app',
+  });
+  const queryStr = 'CREATE TABLE IF NOT EXISTS users ' + '(id INT NOT NULL PRIMARY KEY,' +
+  ' nickname VARCHAR(20), password VARCHAR(32))';
+  connection.query(queryStr, (error, results) => {
+    if (error) throw error;
+    console.log('created');
+    connection.end();
+  });
+
   router.extendExpress(app);
   router.registerAppHelpers(app);
   app.set('view engine', 'pug');
