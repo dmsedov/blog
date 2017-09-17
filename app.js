@@ -23,7 +23,7 @@ export default () => {
     database: 'app',
   });
   const queryStr = 'CREATE TABLE IF NOT EXISTS users ' + '(id INT NOT NULL PRIMARY KEY,' +
-  ' nickname VARCHAR(20), password VARCHAR(32))';
+  ' nickname VARCHAR(20), password CHAR(128))';
   connection.query(queryStr, (error, results) => {
     if (error) throw error;
     console.log('created');
