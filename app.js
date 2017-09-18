@@ -15,21 +15,25 @@ import encrypt from './src/encrypt';
 export default () => {
   const app = Express();
   const router = new Router();
-  const connection = mysql.createConnection({
+  const pool = mysql.createPool({
     host: 'localhost',
     user: 'app',
     port: 3306,
     password: 'Tas2giq2',
     database: 'app',
   });
-  const queryStr = 'CREATE TABLE IF NOT EXISTS users ' + '(id INT NOT NULL PRIMARY KEY,' +
-  ' nickname VARCHAR(20), password CHAR(128))';
-  connection.query(queryStr, (error, results) => {
-    if (error) throw error;
-    console.log('created');
-    connection.end();
+  const user = new User('admin', 'abrakadabra');
+  const queryStr = 'CREATE TABLE IF NOT EXISTS users ' + '(id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,' +
+  ' nickname VARCHAR(20) UNIQUE, password CHAR(128))';
+  pool.getConnection((err, connection) => {
+    connection.query(queryStr, (err1) => {
+      if (err1) throw err1;
+      connection.query(`INSERT IGNORE INTO users (nickname, password) VALUES ('${user.nickname}', '${user.passwordDigest}')`, (err2) => {
+        connection.release();
+        if (err2) throw err2;
+      });
+    });
   });
-
   router.extendExpress(app);
   router.registerAppHelpers(app);
   app.set('view engine', 'pug');
@@ -37,7 +41,6 @@ export default () => {
   app.use(methodOverride('_method'));
   const listOfPosts = [new Post('first title', 'content1'),
     new Post('second title', 'content2')];
-  const users = [new User('admin', 'abrakadabra')];
   app.use(cookieParser());
   const RedisStore = redis(session);
   app.use(session({
@@ -148,29 +151,41 @@ export default () => {
     res.render('forms/sign-up', { form: {} });
   });
 
-  app.post('/users', 'users', (req, res) => {
+  app.post('/users', 'users', (req, res, next) => {
     const { nickname, password } = req.body;
     const error = {};
     if (!nickname) {
       error.nickname = 'must be filled';
     } else {
-      const sameUser = users.find(user => user.nickname === nickname);
-      if (sameUser) {
-        error.message = `User with nickname "${sameUser.nickname}" already exists`;
-      }
+      pool.getConnection((err, connection) => {
+        if (err) {
+          return next(err);
+        }
+        connection.query(`SELECT * FROM users WHERE nickname='${nickname}'`, (err1, result) => {
+          connection.release();
+          if (err1) next(err1);
+          console.log(result, 'result');
+          if (sameUser) {
+            error.message = `User with nickname "${sameUser.nickname}" already exists`;
+          }
+          if (!password) {
+            error.password = 'must be filled';
+          }
+          if (Object.keys(error).length === 0) {
+            const newUser = new User(nickname, password);
+            req.session.nickname = nickname;
+            connection.query(`INSERT INTO users VALUES (${newUser.nickname}, ${newUser.password})`, (err2) => {
+              if (err2) next(err2);
+            });
+            res.redirect('/');
+            return;
+          }
+          res.status(422);
+          res.render('forms/sign-in', { error });
+        });
+      });
     }
-    if (!password) {
-      error.password = 'must be filled';
-    }
-    if (Object.keys(error).length === 0) {
-      const newUser = new User(nickname, password);
-      users.push(newUser);
-      req.session.nickname = nickname;
-      res.redirect('/');
-      return;
-    }
-    res.status(422);
-    res.render('forms/sign-in', { error });
+      // const sameUser = users.find(user => user.nickname === nickname);
   });
 
   app.post('/session', 'session', (req, res) => {
