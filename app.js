@@ -5,35 +5,24 @@ import methodOverride from 'method-override';
 import session from 'express-session';
 import redis from 'connect-redis';
 import cookieParser from 'cookie-parser';
-import mysql from 'mysql';
+import dotenv from 'dotenv';
+import models from './models/index';
 import Post from './src/Post';
 import NotFoundError from './src/NotFoundError';
 import User from './src/entities/User';
 import Guest from './src/entities/Guest';
 import encrypt from './src/encrypt';
 
+
 export default () => {
+  dotenv.load();
   const app = Express();
   const router = new Router();
-  const pool = mysql.createPool({
-    host: 'localhost',
-    user: 'app',
-    port: 3306,
-    password: 'Tas2giq2',
-    database: 'app',
-  });
-  const user = new User('admin', 'abrakadabra');
-  const queryStr = 'CREATE TABLE IF NOT EXISTS users ' + '(id SERIAL,' +
-  ' nickname VARCHAR(20) UNIQUE, password CHAR(128))';
-  pool.getConnection((err, connection) => {
-    if (err) throw err;
-    connection.query(queryStr, (err1) => {
-      if (err1) throw err1;
-      connection.query(`INSERT IGNORE INTO users (nickname, password) VALUES ('${user.nickname}', '${user.passwordDigest}')`, (err2) => {
-        connection.release();
-        if (err2) throw err2;
-      });
-    });
+  models.sequelize.sync().then(() => {
+    console.log('Connection has been established successfully.');
+  })
+  .catch((err) => {
+    console.error('Unable to connect to the database:', err);
   });
   router.extendExpress(app);
   router.registerAppHelpers(app);
