@@ -23,9 +23,10 @@ export default () => {
     database: 'app',
   });
   const user = new User('admin', 'abrakadabra');
-  const queryStr = 'CREATE TABLE IF NOT EXISTS users ' + '(id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,' +
+  const queryStr = 'CREATE TABLE IF NOT EXISTS users ' + '(id SERIAL,' +
   ' nickname VARCHAR(20) UNIQUE, password CHAR(128))';
   pool.getConnection((err, connection) => {
+    if (err) throw err;
     connection.query(queryStr, (err1) => {
       if (err1) throw err1;
       connection.query(`INSERT IGNORE INTO users (nickname, password) VALUES ('${user.nickname}', '${user.passwordDigest}')`, (err2) => {
@@ -55,8 +56,24 @@ export default () => {
   }));
 
   app.use((req, res, next) => {
-    if (req.session.nickname) {
-      app.locals.currentUser = users.find(user => user.nickname === req.session.nickname);
+    if (req.session && req.session.nickname) {
+      pool.getConnection((err, connection) => {
+        if (err) {
+          return next(err);
+        }
+        console.log(req.session, 'session');
+        connection.query(`SELECT * FROM users WHERE nickname='${req.session.nickname}'`, (err1, row) => {
+          connection.release();
+          if (err1) {
+            return next(err1);
+          }
+          const dataOfUser = row.pop();
+          console.log(dataOfUser, 'dataOfUser!!!');
+          const { nickname, passwordDigit } = dataOfUser;
+          const authUser = new User(nickname, passwordDigit);
+          app.locals.currentUser = authUser;
+        });
+      });
     } else {
       app.locals.currentUser = new Guest();
     }
@@ -161,31 +178,34 @@ export default () => {
         if (err) {
           return next(err);
         }
-        connection.query(`SELECT * FROM users WHERE nickname='${nickname}'`, (err1, result) => {
-          connection.release();
+        connection.query(`SELECT * FROM users WHERE nickname='${nickname}'`, (err1, row) => {
           if (err1) next(err1);
-          console.log(result, 'result');
-          if (sameUser) {
+          console.log(row, '!!!! row');
+          if (row.length !== 0) {
+            const sameUser = row.pop();
             error.message = `User with nickname "${sameUser.nickname}" already exists`;
           }
           if (!password) {
             error.password = 'must be filled';
           }
           if (Object.keys(error).length === 0) {
-            const newUser = new User(nickname, password);
+            const newUser = new User(nickname, encrypt(password));
             req.session.nickname = nickname;
-            connection.query(`INSERT INTO users VALUES (${newUser.nickname}, ${newUser.password})`, (err2) => {
-              if (err2) next(err2);
+            connection.query(`INSERT INTO users (nickname, password) VALUES ('${newUser.nickname}', '${newUser.passwordDigest}')`, (err2) => {
+              connection.release();
+              if (err2) {
+                return next(err2);
+              }
+              res.redirect('/');
             });
-            res.redirect('/');
             return;
           }
+          connection.release();
           res.status(422);
           res.render('forms/sign-in', { error });
         });
       });
     }
-      // const sameUser = users.find(user => user.nickname === nickname);
   });
 
   app.post('/session', 'session', (req, res) => {
