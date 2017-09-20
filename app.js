@@ -14,7 +14,7 @@ import Guest from './src/entities/Guest';
 import encrypt from './src/encrypt';
 
 
-export default () => {
+export default  () => {
   dotenv.load();
   const app = Express();
   const router = new Router();
@@ -43,26 +43,18 @@ export default () => {
     resave: false,
     saveUninitialized: false,
   }));
-
+  const Users = models.users;
+  const Posts = models.posts;
   app.use((req, res, next) => {
     if (req.session && req.session.nickname) {
-      pool.getConnection((err, connection) => {
-        if (err) {
-          return next(err);
-        }
-        console.log(req.session, 'session');
-        connection.query(`SELECT * FROM users WHERE nickname='${req.session.nickname}'`, (err1, row) => {
-          connection.release();
-          if (err1) {
-            return next(err1);
-          }
-          const dataOfUser = row.pop();
-          console.log(dataOfUser, 'dataOfUser!!!');
-          const { nickname, passwordDigit } = dataOfUser;
-          const authUser = new User(nickname, passwordDigit);
-          app.locals.currentUser = authUser;
-        });
-      });
+      Users.findAll({
+        where: { nickname: req.session.nickname },
+      }).then((user) => {
+        const [row] = user.get({ plain: true });
+        const { nickname, password } = row;
+        const authUser = new User(nickname, password);
+        app.locals.currentUser = authUser;
+      }).catch(err => next(err));
     } else {
       app.locals.currentUser = new Guest();
     }
@@ -160,39 +152,23 @@ export default () => {
   app.post('/users', 'users', (req, res, next) => {
     const { nickname, password } = req.body;
     const error = {};
-    if (!nickname) {
-      error.nickname = 'must be filled';
+    if (!password || !nickname) {
+      error.message = 'fields "Nickname" and "Password" must be filled';
+      res.status(422);
+      res.render('forms/sign-in', { error });
     } else {
-      pool.getConnection((err, connection) => {
-        if (err) {
-          return next(err);
+      Users.findAll({ where: { nickname } }).then((user) => {
+        if (user.length !== 0) {
+          error.message = `User "${nickname}" already exists`;
         }
-        connection.query(`SELECT * FROM users WHERE nickname='${nickname}'`, (err1, row) => {
-          if (err1) next(err1);
-          console.log(row, '!!!! row');
-          if (row.length !== 0) {
-            const sameUser = row.pop();
-            error.message = `User with nickname "${sameUser.nickname}" already exists`;
-          }
-          if (!password) {
-            error.password = 'must be filled';
-          }
-          if (Object.keys(error).length === 0) {
-            const newUser = new User(nickname, encrypt(password));
-            req.session.nickname = nickname;
-            connection.query(`INSERT INTO users (nickname, password) VALUES ('${newUser.nickname}', '${newUser.passwordDigest}')`, (err2) => {
-              connection.release();
-              if (err2) {
-                return next(err2);
-              }
-              res.redirect('/');
-            });
-            return;
-          }
-          connection.release();
-          res.status(422);
-          res.render('forms/sign-in', { error });
-        });
+        if (Object.keys(error).length === 0) {
+          const newUser = new User(nickname, encrypt(password));
+          req.session.nickname = nickname;
+          Users.create({ nickname: newUser.nickname, password: newUser.passwordDigest })
+          .then(() => res.redirect('/')).catch(err => next(err));
+        }
+        res.status(422);
+        res.render('forms/sign-in', { error });
       });
     }
   });
@@ -229,6 +205,5 @@ export default () => {
       res.render('errorsPages/500');
     }
   });
-
   return app;
 };

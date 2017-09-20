@@ -3,8 +3,8 @@ extends ../layouts/app.pug
 block content
   -const par = error ? error : form;
   form.form-sign-in(method='post' action=`${url('users')}`)
-    input.nickname-field(type='text' name='nickname' placeholder='enter nickname' value=par.nickname)
     if (error)
       p.message=error.message
-    input.password-field(type='password' name='password' placeholder='enter password' value=par.password)
+    input.nickname-field(type='text' name='nickname' placeholder='enter nickname')
+    input.password-field(type='password' name='password' placeholder='enter password')
     button.submit(type='submit') Sign in
