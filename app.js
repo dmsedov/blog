@@ -14,7 +14,7 @@ import Guest from './src/entities/Guest';
 import encrypt from './src/encrypt';
 
 
-export default  () => {
+export default () => {
   dotenv.load();
   const app = Express();
   const router = new Router();
@@ -49,9 +49,9 @@ export default  () => {
     if (req.session && req.session.nickname) {
       Users.findAll({
         where: { nickname: req.session.nickname },
-      }).then((user) => {
-        const [row] = user.get({ plain: true });
-        const { nickname, password } = row;
+      }).then((result) => {
+        const [user] = result;
+        const { nickname, password } = user.get({ plain: true });
         const authUser = new User(nickname, password);
         app.locals.currentUser = authUser;
       }).catch(err => next(err));
@@ -157,8 +157,8 @@ export default  () => {
       res.status(422);
       res.render('forms/sign-in', { error });
     } else {
-      Users.findAll({ where: { nickname } }).then((user) => {
-        if (user.length !== 0) {
+      Users.findAll({ where: { nickname } }).then((result) => {
+        if (result.length !== 0) {
           error.message = `User "${nickname}" already exists`;
         }
         if (Object.keys(error).length === 0) {
@@ -166,6 +166,7 @@ export default  () => {
           req.session.nickname = nickname;
           Users.create({ nickname: newUser.nickname, password: newUser.passwordDigest })
           .then(() => res.redirect('/')).catch(err => next(err));
+          return;
         }
         res.status(422);
         res.render('forms/sign-in', { error });
@@ -176,15 +177,27 @@ export default  () => {
   app.post('/session', 'session', (req, res) => {
     const { nickname, password } = req.body;
     const error = {};
-    const authUser = users.find(user => user.nickname === nickname);
-    if (authUser && authUser.passwordDigest === encrypt(password)) {
-      req.session.nickname = nickname;
-      res.redirect('/');
-      return;
+    if (nickname && password) {
+      Users.findAll({ where: { nickname } }).then((result) => {
+        if (result.length !== 0 && result[0].get({ plain: true }).password === encrypt(password)) {
+          req.session.nickname = nickname;
+          res.redirect('/');
+          return;
+        }
+        error.message = 'Invalid user nickname or password';
+        res.status(422);
+        res.render('forms/sign-up', { error });
+      });
+    } else {
+      if (!nickname) {
+        error.nickname = 'must be filled';
+      }
+      if (!password) {
+        error.password = 'must be filled';
+      }
+      res.status(422);
+      res.render('forms/sign-up', { error });
     }
-    error.message = 'Invalid user nickname or password';
-    res.status(422);
-    res.render('forms/sign-up', { error });
   });
 
   app.delete('/session', 'session', (req, res) => {
@@ -205,5 +218,6 @@ export default  () => {
       res.render('errorsPages/500');
     }
   });
+
   return app;
 };
