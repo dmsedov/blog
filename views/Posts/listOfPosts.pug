@@ -2,19 +2,19 @@ extends ../layouts/app.pug
 
 block content
   div
-    a(href=`${url('root')}`) Main page
   if posts.length > 0
     table.posts-table
       tr
+        th №
         th Title
-        th Action
+        th Author
+      -let num = 1;
       for post in posts
         tr
+        -const { post_id, title, user } = post.get({ plain: true });
+          td=num++
           td
-            a(href=`${url('posts.id', { id: post.id })}`)=post.title
-          td
-            a(href=`${url('posts.id.edit', { id: post.id })}`)  Edit
-            form.delete-post(method='post' action=`${url('posts.id', { id: post.id })}?_method=DELETE`)
-              input.button(type='submit' value='Delete')
+            a(href=`${url('posts.id', { id: post_id })}`)=title
+          td=user
   else
     p Some content

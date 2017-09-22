@@ -55,11 +55,10 @@ export default () => {
   }));
   app.use((req, res, next) => {
     if (req.session && req.session.nickname) {
-      Users.findAll({
+      Users.findOne({
         where: { nickname: req.session.nickname },
       }).then((result) => {
-        const [user] = result;
-        const { nickname, password } = user.get({ plain: true });
+        const { nickname, password } = result.get({ plain: true });
         const authUser = new User(nickname, password);
         app.locals.currentUser = authUser;
       }).catch(err => next(err));
@@ -74,7 +73,9 @@ export default () => {
   });
 
   app.get('/posts', 'posts', (req, res) => {
-    res.render('Posts/listOfPosts', { posts: listOfPosts });
+    Posts.findAll().then((posts) => {
+      res.render('Posts/listOfPosts', { posts });
+    });
   });
 
   app.get('/posts/new', 'posts.new', (req, res) => {
@@ -83,17 +84,12 @@ export default () => {
 
   app.get('/posts/:id', 'posts.id', (req, res, next) => {
     const { id } = req.params;
-    const reqPost = listOfPosts.find((post) => {
-      if (post.id.toString() === id) {
-        return true;
+    Posts.findOne({ where: { post_id: id } }).then((result) => {
+      if (!result) {
+        next(new NotFoundError());
       }
-      return false;
+      res.render('Posts/show', { post: result.get({ plain: true }) });
     });
-    if (reqPost) {
-      res.render('Posts/show', { reqPost });
-    } else {
-      next(new NotFoundError());
-    }
   });
 
   app.post('/posts', 'posts', (req, res) => {
@@ -165,8 +161,8 @@ export default () => {
       res.status(422);
       res.render('forms/sign-in', { error });
     } else {
-      Users.findAll({ where: { nickname } }).then((result) => {
-        if (result.length !== 0) {
+      Users.findOne({ where: { nickname } }).then((result) => {
+        if (result) {
           error.message = `User "${nickname}" already exists`;
         }
         if (Object.keys(error).length === 0) {
