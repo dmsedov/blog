@@ -5,7 +5,6 @@ import methodOverride from 'method-override';
 import session from 'express-session';
 import redis from 'connect-redis';
 import cookieParser from 'cookie-parser';
-import dotenv from 'dotenv';
 import models from './models/index';
 import Post from './src/Post';
 import NotFoundError from './src/NotFoundError';
@@ -15,7 +14,6 @@ import encrypt from './src/encrypt';
 
 
 export default () => {
-  dotenv.load();
   const app = Express();
   const router = new Router();
   models.sequelize.sync().then(() => {
