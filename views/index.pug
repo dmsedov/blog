@@ -7,3 +7,5 @@ block content
       a(href=`${url('posts')}`) List of posts
     li
       a(href=`${url('posts.new')}`) Create new post
+    if message
+      p.message=message
