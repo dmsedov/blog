@@ -11,13 +11,27 @@ import NotFoundError from './src/NotFoundError';
 import User from './src/entities/User';
 import Guest from './src/entities/Guest';
 import encrypt from './src/encrypt';
+import data from './dataDb/genData';
 
 
 export default () => {
   const app = Express();
   const router = new Router();
+  const Users = models.users;
+  const Posts = models.posts;
+  const { usersData, postsData } = data();
   models.sequelize.sync().then(() => {
     console.log('Connection has been established successfully.');
+    Users.findAll().then((users) => {
+      if (users.length === 0) {
+        Users.bulkCreate(usersData);
+      }
+    });
+    Posts.findAll().then((posts) => {
+      if (posts.length === 0) {
+        Posts.bulkCreate(postsData);
+      }
+    });
   })
   .catch((err) => {
     console.error('Unable to connect to the database:', err);
@@ -27,8 +41,6 @@ export default () => {
   app.set('view engine', 'pug');
   app.use(bodyParser.urlencoded({ extended: false }));
   app.use(methodOverride('_method'));
-  const listOfPosts = [new Post('first title', 'content1'),
-    new Post('second title', 'content2')];
   app.use(cookieParser());
   const RedisStore = redis(session);
   app.use(session({
@@ -41,8 +53,6 @@ export default () => {
     resave: false,
     saveUninitialized: false,
   }));
-  const Users = models.users;
-  const Posts = models.posts;
   app.use((req, res, next) => {
     if (req.session && req.session.nickname) {
       Users.findAll({
