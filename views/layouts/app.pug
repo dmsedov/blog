@@ -14,4 +14,6 @@ html
       else
         form.form-sign-out(action=`${url('session')}?_method=DELETE` method='post')
           input.button(type='submit' value='Sign out')
+        .admin-tool
+          a(href=`${url('my-posts')}`) My posts 
       block content

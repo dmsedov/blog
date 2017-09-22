@@ -130,6 +130,14 @@ export default () => {
     }).catch(err => next(err));
   });
 
+  app.get('/myposts', 'my-posts', (req, res, next) => {
+    Posts.findAll({ where: {
+      user: req.session.nickname,
+    } }).then((posts) => {
+      res.render('Posts/myposts', { posts });
+    }).catch(err => next(err));
+  });
+
   app.patch('/posts/:id', 'posts.id', (req, res, next) => {
     const { title, body } = req.body;
     const { id } = req.params;
@@ -160,7 +168,7 @@ export default () => {
     const { id } = req.params;
     Posts.destroy({ where: {
       post_id: id,
-    } }).then(() => res.redirect('/posts')).catch(err => next(err));
+    } }).then(() => res.redirect('/myposts')).catch(err => next(err));
   });
 
   app.get('/users/new', 'users.new', (req, res) => {
@@ -231,15 +239,15 @@ export default () => {
     next(new NotFoundError());
   });
 
-  // app.use((err, req, res, next) => {
-  //   if (err.status === 404) {
-  //     res.status(404);
-  //     res.render('errorsPages/404');
-  //   } else {
-  //     res.status(500);
-  //     res.render('errorsPages/500');
-  //   }
-  // });
+  app.use((err, req, res, next) => {
+    if (err.status === 404) {
+      res.status(404);
+      res.render('errorsPages/404');
+    } else {
+      res.status(500);
+      res.render('errorsPages/500');
+    }
+  });
 
   return app;
 };

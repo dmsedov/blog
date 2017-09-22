@@ -1,0 +1,23 @@
+extends ../layouts/app.pug
+
+block content
+  .listOfPost
+  if posts.length > 0
+    table.posts-table
+      tr
+        th №
+        th Title
+        th Action
+      -let num = 1;
+      for post in posts
+        tr
+        -const { post_id, title, user } = post.get({ plain: true });
+          td=num++
+          td
+            a(href=`${url('posts.id', { id: post_id })}`)=title
+          td
+            a(href=`${url('posts.id.edit', { id: post_id })}`)  Edit
+            form.delete-post(method='post' action=`${url('posts.id', { id: post_id })}?_method=DELETE`)
+              input.button(type='submit' value='Delete')
+  else
+    p Some content
